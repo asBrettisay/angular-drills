@@ -1,6 +1,13 @@
 <html ng-app="apiApp">
-	<body>
-		
+	<body ng-controller="mainController">
+
+		<div ng-repeat="starship in starships">
+			{{starship.name}}, {{starship.model}}
+			<ul ng-repeat="pilot in starship.pilots">
+				<li>{{pilot.name}}</li>
+			</ul>
+		</div>
+
 				<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
 		<script src="app.js"></script>
 		<script src="controller.js"></script>
