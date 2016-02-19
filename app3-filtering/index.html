@@ -1,6 +1,9 @@
-<html>
-	<body>
-		Something
+<html ng-app="myApp">
+	<body ng-controller="mainController">
+		<input type="text" ng-model="searchPredicate"></input>
+		<div ng-repeat="person in array | filter: searchPredicate">
+		{{person.name}}, {{person.email}}, {{person.dateEmployed}}, {{person.phone}}
+		</div>
 				<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
 		<script src="app.js"></script>
 		<script src="controller.js"></script>
