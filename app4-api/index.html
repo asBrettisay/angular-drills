@@ -4,7 +4,8 @@
 		<div ng-repeat="starship in starships">
 			{{starship.name}}, {{starship.model}}
 			<ul ng-repeat="pilot in starship.pilots">
-				<li>{{pilot.name}}</li>
+				<li>Name: {{pilot.name}}</li>
+				<li>Species: {{pilot.species.name}}</li>
 			</ul>
 		</div>
 

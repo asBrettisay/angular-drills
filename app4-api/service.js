@@ -1,45 +1,88 @@
 angular.module('apiApp')
-.service('swSvc', function($q, $http) {
+.service('swSvc', function($q, $http, $timeout) {
   var baseUrl = "http://swapi.co/api";
 
+
   this.getStarships = function() {
-    var later = $q.defer();
+    var starships;
+    return $q(function(resolveShips, rejectShips) {
 
-    $http({
-      method: "GET",
-      url: baseUrl + "/starships/"
-    }).then(function(response) {
-      var starships = response.data.results;
+      $http({
+        method: 'GET',
+        url: baseUrl + '/starships/'
+      }).then(function(response) {
+        starships = response.data.results;
 
-      starships.forEach(function(ship) {
-        getPilots(ship.pilots)
+        starships.forEach(function(ship) {
+          $q(function(resolvePilots, rejectPilots) {
+            getPilots(ship.pilots).then(function(pArr) {
+              resolvePilots(pArr)
+            })
+
+          }).then(function(pArr) {
+            ship.pilots = pArr;
+          })
+        })
+        resolveShips(starships)
       })
-
-      later.resolve(starships);
     })
-
-    return later.promise;
   }
 
+
+
+
   var getPilots = function(pArr) {
-    var index = 0;
-    var ans = $q.defer();
+    var index = 0, ansArr = [], ans = $q.defer();
+
+
+
     function pilotRetriever() {
+
       if (pArr[index]) {
+
+        var pilot;
+        var pilotDefer = $q.defer();
+        var speciesDefer = $q.defer();
+        var pilotPromise = pilotDefer.promise;
+        var speciesPromise = speciesDefer.promise;
+
+
         $http({
           method: "GET",
           url: pArr[index]
         }).then(function(response) {
-          pArr[index] = response.data;
-          index++
+          pilotDefer.resolve(response.data);
+
+          // Species API is available in the pilot data.
+          $http({
+            method: "GET",
+            url: response.data.species
+          }).then(function(response) {
+            speciesDefer.resolve(response.data);
+          })
+
+          // Resolve both get messages together.
+          $q.all([
+            pilotPromise.then(function(data) {
+              pilot = data;
+            }),
+            speciesPromise.then(function(data) {
+              pilot.species = data;
+            })
+          ]).then(function(data) {
+            ansArr.push(pilot);
+          })
+
+          index++;
           pilotRetriever();
         })
       } else {
-        ans.resolve(pArr);
-        return ans.promise;
+        ans.resolve(ansArr);
       }
     }
+
     pilotRetriever();
+    return ans.promise
   }
 
 })
