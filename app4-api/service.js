@@ -1,7 +1,7 @@
 angular.module('apiApp')
 .service('swSvc', function($q, $http, $timeout) {
   var baseUrl = "http://swapi.co/api";
-
+  $http.defaults.cache = true;
 
   this.getStarships = function() {
     var starships;
@@ -61,17 +61,24 @@ angular.module('apiApp')
             speciesDefer.resolve(response.data);
           })
 
-          // Resolve both get messages together.
+          function spread(func) {
+            return function(array) {
+              func.apply(void 0, array)
+            }
+          }
+
           $q.all([
             pilotPromise.then(function(data) {
-              pilot = data;
+              return data;
             }),
             speciesPromise.then(function(data) {
-              pilot.species = data;
+              return data;
             })
-          ]).then(function(data) {
+          ]).then(spread(function(pilot, species) {
+            pilot = pilot;
+            pilot.species = species;
             ansArr.push(pilot);
-          })
+          }))
 
           index++;
           pilotRetriever();
